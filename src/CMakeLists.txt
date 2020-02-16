@@ -6,3 +6,5 @@ target_sources(yaml
         yaml.c
         yaml_impl.h
         )
+
+add_subdirectory(document)

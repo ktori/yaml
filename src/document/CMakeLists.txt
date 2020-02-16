@@ -1,0 +1,9 @@
+target_sources(yaml
+        PUBLIC
+        document.h
+        map.h
+        value.h
+        PRIVATE
+        document.c
+        map.c
+        )
