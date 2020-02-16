@@ -1,0 +1,8 @@
+target_sources(yaml
+        PUBLIC
+        yaml.h
+        callbacks.h
+        PRIVATE
+        yaml.c
+        yaml_impl.h
+        )
