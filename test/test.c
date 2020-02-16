@@ -23,6 +23,12 @@ value_callback(const char *begin, size_t size, void *user)
 	printf("value: %.*s\n", (int) size, begin);
 }
 
+static void
+indent_callback(unsigned indent, void *user)
+{
+	printf("indent: %u\n", indent);
+}
+
 int
 main(int argc, const char **argv)
 {
@@ -32,6 +38,7 @@ main(int argc, const char **argv)
 	struct yaml_callbacks_s callbacks = {0};
 	callbacks.key = key_callback;
 	callbacks.value = value_callback;
+	callbacks.indent = indent_callback;
 
 	if (argc < 2)
 		input = fopen("loadme.yaml", "r");
