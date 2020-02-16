@@ -4,7 +4,10 @@
 
 #pragma once
 
+#include "callbacks.h"
+
 struct yaml_s
 {
 	unsigned last_indent;
+	struct yaml_callbacks_s callbacks;
 };

@@ -7,8 +7,21 @@
 #include <string.h>
 
 #include "../src/yaml.h"
+#include "../src/callbacks.h"
 
 #define MAX_LINE_LENGTH 1024
+
+static void
+key_callback(const char *begin, size_t size, void *user)
+{
+	printf("key: %.*s\n", (int) size, begin);
+}
+
+static void
+value_callback(const char *begin, size_t size, void *user)
+{
+	printf("value: %.*s\n", (int) size, begin);
+}
 
 int
 main(int argc, const char **argv)
@@ -16,6 +29,9 @@ main(int argc, const char **argv)
 	FILE *input;
 	struct yaml_s *yaml;
 	char buffer[MAX_LINE_LENGTH];
+	struct yaml_callbacks_s callbacks = {0};
+	callbacks.key = key_callback;
+	callbacks.value = value_callback;
 
 	if (argc < 2)
 		input = fopen("loadme.yaml", "r");
@@ -29,10 +45,11 @@ main(int argc, const char **argv)
 	}
 
 	yaml_create(&yaml);
+	yaml_set_callbacks(yaml, &callbacks);
 
 	while (fgets(buffer, MAX_LINE_LENGTH, input))
 	{
-		yaml_in(yaml, buffer, strlen(buffer));
+		yaml_in(yaml, buffer, strlen(buffer), NULL);
 	}
 
 	yaml_free(&yaml);
