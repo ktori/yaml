@@ -8,6 +8,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define YF_EOL 0x1u
+#define YF_EOL_INC 0x2u
+#define YF_CONSUME 0x4u
+#define YF_QUOTE_SWITCH 0x8u
+#define YF_NO_QUOTE 0x10u
+
 int
 yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 {
@@ -24,18 +30,35 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 
 	const char *i = line, *end = line + length;
 	const char *key_begin = NULL, *value_begin = NULL, *ows_end = NULL;
-	int consume, eol = 0, comment = 0, inc_eol;
+	unsigned flags = 0;
+	int is_quote = 0, is_single_quote = 0, was_single_quote = 0;
 	enum state state = YS_INDENT;
 	unsigned ex_indent, acc_indent = 0;
 
-	while (i < end && !eol && state != YS_ERROR && state != YS_DONE)
+	while (i < end && !(flags & YF_EOL) && state != YS_ERROR && state != YS_DONE)
 	{
-		consume = 0;
-		comment = *i == '#';
-		inc_eol = comment || *i == '\r' || *i == '\n';
-		eol = i == end - 1 || inc_eol;
+		flags = 0;
 
-		if (eol)
+		if (*i == '\'' && !was_single_quote && !is_quote)
+		{
+			flags |= YF_QUOTE_SWITCH | YF_CONSUME;
+			is_single_quote = !is_single_quote;
+		}
+		if (*i == '\"' && !is_single_quote)
+		{
+			flags |= YF_QUOTE_SWITCH | YF_CONSUME;
+			is_quote = !is_quote;
+		}
+
+		if (!(is_quote || is_single_quote))
+			flags |= YF_NO_QUOTE;
+
+		if ((*i == '#' && flags & YF_NO_QUOTE) || *i == '\r' || *i == '\n')
+			flags |= YF_EOL_INC;
+		if (i == end - 1 || flags & YF_EOL_INC)
+			flags |= YF_EOL;
+
+		if (flags & YF_EOL)
 		{
 			switch (state)
 			{
@@ -44,7 +67,7 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 					state = YS_DONE;
 					break;
 				case YS_VALUE:
-					if (inc_eol)
+					if (flags & YF_EOL_INC)
 					{
 						if (yaml->callbacks.value)
 							yaml->callbacks.value(value_begin, (ows_end ? ows_end + 1 : i) - value_begin, user);
@@ -70,7 +93,7 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 				if (*i == ' ')
 				{
 					++acc_indent;
-					consume = 1;
+					flags |= YF_CONSUME;
 				}
 				else
 				{
@@ -104,11 +127,11 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 				}
 				break;
 			case YS_KEY:
-				if (*i == ':')
+				if (*i == ':' && (flags & YF_NO_QUOTE))
 					state = YS_KV_SEP;
 				else
 				{
-					consume = 1;
+					flags |= YF_CONSUME;
 					if (*i != ' ')
 						ows_end = i;
 				}
@@ -117,13 +140,13 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 				if (yaml->callbacks.key)
 					yaml->callbacks.key(key_begin, (ows_end ? ows_end + 1 : i) - key_begin, user);
 				state = YS_WS;
-				consume = 1;
+				flags |= YF_CONSUME;
 				break;
 			case YS_WS:
 				if (*i != ' ')
 					state = YS_VALUE;
 				else
-					consume = 1;
+					flags |= YF_CONSUME;
 				break;
 			case YS_VALUE:
 				if (value_begin == NULL)
@@ -133,13 +156,15 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 				}
 				if (*i != ' ')
 					ows_end = i;
-				consume = 1;
+				flags |= YF_CONSUME;
 				break;
 			default:
 				break;
 		}
 
-		if (consume)
+		was_single_quote = *i == '\'';
+
+		if (flags & YF_CONSUME || was_single_quote)
 			++i;
 	}
 

@@ -1,7 +1,9 @@
+
+" quot: 'yes' "  : ' quoted #value" with ''quotes'' '  # '"
 hello : # comment
   # this is a comment
   value   :    1 #comment 23
-  another : test
+  another : test with spaces
   # testing
 # comment
 world :
