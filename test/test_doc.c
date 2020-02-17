@@ -10,6 +10,7 @@
 #include "../src/document/map.h"
 #include "../src/yaml.h"
 #include "../src/document/value.h"
+#include "../src/document/kv.h"
 
 #define MAX_LINE_LENGTH 1024
 
@@ -41,17 +42,17 @@ visit_yaml_value(struct yaml_value_s *value, int depth)
 		case YVT_MAP:
 			putc('\n', stdout);
 
-			for (k = 0; k < value->body.map->array_size; ++k)
+			for (k = 0; k < value->body.map.array_size; ++k)
 			{
 				for (i = 0; i < depth; ++i)
 					putc(' ', stdout);
 				printf("key:\n");
-				visit_yaml_value(&value->body.map->kv_array[k].key, depth + 2);
+				visit_yaml_value(&value->body.map.kv_array[k].key, depth + 2);
 
 				for (i = 0; i < depth; ++i)
 					putc(' ', stdout);
 				printf("value:\n");
-				visit_yaml_value(&value->body.map->kv_array[k].key, depth + 2);
+				visit_yaml_value(&value->body.map.kv_array[k].value, depth + 2);
 			}
 			break;
 		case YVT_STRING:
@@ -98,7 +99,7 @@ main(int argc, const char **argv)
 
 	while (fgets(buffer, MAX_LINE_LENGTH, input))
 	{
-		if (yaml_in(yaml, buffer, strlen(buffer), &document) != EXIT_SUCCESS)
+		if (yaml_in(yaml, buffer, strlen(buffer), document.ctx) != EXIT_SUCCESS)
 		{
 			fprintf(stderr, "YAML error\n");
 			exit_status = EXIT_FAILURE;

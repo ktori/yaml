@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "map.h"
+
 enum yaml_value_type
 {
 	YVT_NULL,
@@ -22,10 +24,16 @@ struct yaml_value_s
 	union
 	{
 		const char *string;
-		struct yaml_map_s *map;
+		struct yaml_map_s map;
 		int integer;
 		float floating;
 		int boolean;
 		const void *binary;
 	} body;
 };
+
+int
+yaml_value_string(struct yaml_value_s *value, const char *string, size_t length);
+
+int
+yaml_value_free(struct yaml_value_s *value);

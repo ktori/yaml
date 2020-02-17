@@ -50,6 +50,8 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 							struct yaml_context_s ctx = {0};
 							ctx.indent = acc_indent;
 							yaml_context_push(yaml, ctx);
+							if (yaml->callbacks.indent && yaml->stack_size > 1)
+								yaml->callbacks.indent(acc_indent, ex_indent, user);
 						}
 						else
 						{
@@ -60,9 +62,9 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 								state = YS_ERROR;
 								break;
 							}
+							if (yaml->callbacks.indent)
+								yaml->callbacks.indent(acc_indent, ex_indent, user);
 						}
-						if (yaml->callbacks.indent)
-							yaml->callbacks.indent(acc_indent, user);
 					}
 					key_begin = i;
 					state = YS_KEY;

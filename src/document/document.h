@@ -13,6 +13,7 @@ struct yaml_s;
 struct yaml_document_s
 {
 	struct yaml_value_s root;
+	struct document_load_ctx_s *ctx;
 };
 
 int

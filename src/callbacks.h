@@ -15,5 +15,5 @@ struct yaml_callbacks_s
 	(*value)(const char *start, size_t length, void *user);
 
 	void
-	(*indent)(unsigned indent, void *user);
+	(*indent)(unsigned next, unsigned current, void *user);
 };

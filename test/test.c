@@ -24,9 +24,9 @@ value_callback(const char *begin, size_t size, void *user)
 }
 
 static void
-indent_callback(unsigned indent, void *user)
+indent_callback(unsigned next, unsigned current, void *user)
 {
-	printf("indent: %u\n", indent);
+	printf("indent: %u (was %u)\n", next, current);
 }
 
 int
