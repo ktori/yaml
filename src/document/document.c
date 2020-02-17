@@ -38,40 +38,53 @@ yd_key_callback(const char *key, size_t size, struct document_load_ctx_s *ctx)
 	{
 		if (top->target_sequence != NULL)
 		{
-			fprintf(stderr, "unexpected key: %.*s\n", (int) size, key);
-			return;
+			before = ctx->top;
+			top = calloc(1, sizeof(struct document_load_ctx_s));
+			top->before = before;
+			if (before->target_sequence->count < top->kv_index)
+			{
+				fprintf(stderr, "kv out of bounds\n");
+				return;
+			}
+
+			before->target_sequence->values[before->kv_index].type = YVT_MAP;
+			top->target_map = &before->target_sequence->values[before->kv_index].body.map;
+			yaml_map_init(top->target_map);
 		}
-		before = top->before;
-		if (top->before == NULL)
+		else
 		{
-			if (ctx->document->root.type != YVT_NULL)
+			before = top->before;
+			if (top->before == NULL)
+			{
+				if (ctx->document->root.type != YVT_NULL)
+				{
+					fprintf(stderr, "unexpected key: %.*s\n", (int) size, key);
+					return;
+				}
+
+				ctx->document->root.type = YVT_MAP;
+				yaml_map_init(&ctx->document->root.body.map);
+				top->target_map = &ctx->document->root.body.map;
+			}
+			else if (before->target_map != NULL && before->kv_index != KV_INDEX_UNDEFINED &&
+					 before->target_map->kv_array[before->kv_index].value.type == YVT_NULL)
+			{
+				before->target_map->kv_array[before->kv_index].value.type = YVT_MAP;
+				yaml_map_init(&before->target_map->kv_array[before->kv_index].value.body.map);
+				top->target_map = &before->target_map->kv_array[before->kv_index].value.body.map;
+			}
+			else if (before->target_sequence != NULL && before->kv_index != KV_INDEX_UNDEFINED &&
+					 before->target_sequence->values[before->kv_index].type == YVT_NULL)
+			{
+				before->target_sequence->values[before->kv_index].type = YVT_MAP;
+				yaml_map_init(&before->target_sequence->values[before->kv_index].body.map);
+				top->target_map = &before->target_sequence->values[before->kv_index].body.map;
+			}
+			else
 			{
 				fprintf(stderr, "unexpected key: %.*s\n", (int) size, key);
 				return;
 			}
-
-			ctx->document->root.type = YVT_MAP;
-			yaml_map_init(&ctx->document->root.body.map);
-			top->target_map = &ctx->document->root.body.map;
-		}
-		else if (before->target_map != NULL && before->kv_index != KV_INDEX_UNDEFINED &&
-				 before->target_map->kv_array[before->kv_index].value.type == YVT_NULL)
-		{
-			before->target_map->kv_array[before->kv_index].value.type = YVT_MAP;
-			yaml_map_init(&before->target_map->kv_array[before->kv_index].value.body.map);
-			top->target_map = &before->target_map->kv_array[before->kv_index].value.body.map;
-		}
-		else if (before->target_sequence != NULL && before->kv_index != KV_INDEX_UNDEFINED &&
-				 before->target_sequence->values[before->kv_index].type == YVT_NULL)
-		{
-			before->target_sequence->values[before->kv_index].type = YVT_MAP;
-			yaml_map_init(&before->target_sequence->values[before->kv_index].body.map);
-			top->target_map = &before->target_sequence->values[before->kv_index].body.map;
-		}
-		else
-		{
-			fprintf(stderr, "unexpected key: %.*s\n", (int) size, key);
-			return;
 		}
 	}
 

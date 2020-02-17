@@ -44,15 +44,15 @@ visit_yaml_value(struct yaml_value_s *value, int depth)
 
 			for (k = 0; k < value->body.map.array_size; ++k)
 			{
-				for (i = 0; i < depth; ++i)
+				for (i = 0; i < depth + 2; ++i)
 					putc(' ', stdout);
 				printf("key:\n");
-				visit_yaml_value(&value->body.map.kv_array[k].key, depth + 2);
+				visit_yaml_value(&value->body.map.kv_array[k].key, depth + 4);
 
-				for (i = 0; i < depth; ++i)
+				for (i = 0; i < depth + 2; ++i)
 					putc(' ', stdout);
 				printf("value:\n");
-				visit_yaml_value(&value->body.map.kv_array[k].value, depth + 2);
+				visit_yaml_value(&value->body.map.kv_array[k].value, depth + 4);
 			}
 			break;
 		case YVT_STRING:
@@ -71,11 +71,7 @@ visit_yaml_value(struct yaml_value_s *value, int depth)
 			putc('\n', stdout);
 
 			for (k = 0; k < value->body.sequence.count; ++k)
-			{
-				for (i = 0; i < depth; ++i)
-					putc(' ', stdout);
 				visit_yaml_value(&value->body.sequence.values[k], depth + 2);
-			}
 			break;
 		default:
 			putc('\n', stdout);

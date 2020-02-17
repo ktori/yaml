@@ -22,6 +22,7 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 		YS_ERROR,
 		YS_INDENT,
 		YS_ENTRY,
+		YS_SEQUENCE_VALUE,
 		YS_KEY,
 		YS_KV_SEP,
 		YS_WS,
@@ -32,7 +33,7 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 	const char *i = line, *end = line + length;
 	const char *key_begin = NULL, *value_begin = NULL, *ows_end = NULL;
 	unsigned flags = 0;
-	int is_quote = 0, is_single_quote = 0, was_single_quote = 0;
+	int is_quote = 0, is_single_quote = 0, was_single_quote = 0, is_sequence = 0;
 	enum state state = YS_INDENT, next_state = YS_ERROR;
 	unsigned ex_indent, acc_indent = 0;
 
@@ -66,6 +67,25 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 				case YS_INDENT:
 				case YS_WS:
 					state = YS_DONE;
+					break;
+				case YS_KEY:
+					if (!is_sequence)
+					{
+						state = YS_ERROR;
+						break;
+					}
+					if (flags & YF_EOL_INC)
+					{
+						if (yaml->callbacks.value)
+							yaml->callbacks.value(key_begin, (ows_end ? ows_end + 1 : i) - key_begin, user);
+						state = YS_DONE;
+					}
+					else
+					{
+						if (yaml->callbacks.value)
+							yaml->callbacks.value(key_begin, (ows_end ? ows_end + 1 : i) - key_begin + 1, user);
+						state = YS_DONE;
+					}
 					break;
 				case YS_VALUE:
 					if (flags & YF_EOL_INC)
@@ -122,7 +142,6 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 								yaml->callbacks.indent(acc_indent, ex_indent, user);
 						}
 					}
-					key_begin = i;
 					ows_end = NULL;
 					state = YS_ENTRY;
 				}
@@ -132,7 +151,8 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 				{
 					flags |= YF_CONSUME;
 					state = YS_WS;
-					next_state = YS_VALUE;
+					is_sequence = 1;
+					next_state = YS_KEY;
 					if (yaml->callbacks.sequence_entry)
 						yaml->callbacks.sequence_entry(user);
 				}
@@ -140,6 +160,8 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 					state = YS_KEY;
 				break;
 			case YS_KEY:
+				if (key_begin == NULL)
+					key_begin = i;
 				if (*i == ':' && (flags & YF_NO_QUOTE))
 					state = YS_KV_SEP;
 				else
@@ -150,6 +172,15 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 				}
 				break;
 			case YS_KV_SEP:
+				if (is_sequence && yaml->callbacks.indent)
+				{
+					struct yaml_context_s ctx = {0};
+
+					acc_indent = key_begin - line;
+					ctx.indent = acc_indent;
+					yaml_context_push(yaml, ctx);
+					yaml->callbacks.indent(acc_indent, yaml->context_stack[yaml->stack_size - 1].indent, user);
+				}
 				if (yaml->callbacks.key)
 					yaml->callbacks.key(key_begin, (ows_end ? ows_end + 1 : i) - key_begin, user);
 				state = YS_WS;
