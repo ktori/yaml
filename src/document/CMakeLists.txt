@@ -4,8 +4,10 @@ target_sources(yaml
         kv.h
         map.h
         value.h
+        sequence.h
         PRIVATE
         document.c
         map.c
         value.c
+        sequence.c
         )

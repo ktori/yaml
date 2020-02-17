@@ -32,6 +32,9 @@ yaml_value_free(struct yaml_value_s *value)
 		case YVT_MAP:
 			yaml_map_destroy(&value->body.map);
 			break;
+		case YVT_SEQUENCE:
+			yaml_sequence_destroy(&value->body.sequence);
+			break;
 		default:
 			break;
 	}

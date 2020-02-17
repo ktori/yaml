@@ -67,6 +67,16 @@ visit_yaml_value(struct yaml_value_s *value, int depth)
 		case YVT_BOOL:
 			printf(", value: %s\n", value->body.boolean ? "true" : "false");
 			break;
+		case YVT_SEQUENCE:
+			putc('\n', stdout);
+
+			for (k = 0; k < value->body.sequence.count; ++k)
+			{
+				for (i = 0; i < depth; ++i)
+					putc(' ', stdout);
+				visit_yaml_value(&value->body.sequence.values[k], depth + 2);
+			}
+			break;
 		default:
 			putc('\n', stdout);
 			break;

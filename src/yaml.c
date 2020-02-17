@@ -21,6 +21,7 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 	{
 		YS_ERROR,
 		YS_INDENT,
+		YS_ENTRY,
 		YS_KEY,
 		YS_KV_SEP,
 		YS_WS,
@@ -32,7 +33,7 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 	const char *key_begin = NULL, *value_begin = NULL, *ows_end = NULL;
 	unsigned flags = 0;
 	int is_quote = 0, is_single_quote = 0, was_single_quote = 0;
-	enum state state = YS_INDENT;
+	enum state state = YS_INDENT, next_state = YS_ERROR;
 	unsigned ex_indent, acc_indent = 0;
 
 	while (i < end && !(flags & YF_EOL) && state != YS_ERROR && state != YS_DONE)
@@ -123,8 +124,20 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 					}
 					key_begin = i;
 					ows_end = NULL;
-					state = YS_KEY;
+					state = YS_ENTRY;
 				}
+				break;
+			case YS_ENTRY:
+				if (*i == '-')
+				{
+					flags |= YF_CONSUME;
+					state = YS_WS;
+					next_state = YS_VALUE;
+					if (yaml->callbacks.sequence_entry)
+						yaml->callbacks.sequence_entry(user);
+				}
+				else
+					state = YS_KEY;
 				break;
 			case YS_KEY:
 				if (*i == ':' && (flags & YF_NO_QUOTE))
@@ -140,11 +153,12 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 				if (yaml->callbacks.key)
 					yaml->callbacks.key(key_begin, (ows_end ? ows_end + 1 : i) - key_begin, user);
 				state = YS_WS;
+				next_state = YS_VALUE;
 				flags |= YF_CONSUME;
 				break;
 			case YS_WS:
 				if (*i != ' ')
-					state = YS_VALUE;
+					state = next_state;
 				else
 					flags |= YF_CONSUME;
 				break;

@@ -5,12 +5,13 @@
 #pragma once
 
 #include "map.h"
+#include "sequence.h"
 
 enum yaml_value_type
 {
 	YVT_NULL,
 	YVT_MAP,
-	YVT_LIST,
+	YVT_SEQUENCE,
 	YVT_STRING,
 	YVT_INT,
 	YVT_FLOAT,
@@ -25,6 +26,7 @@ struct yaml_value_s
 	{
 		const char *string;
 		struct yaml_map_s map;
+		struct yaml_sequence_s sequence;
 		int integer;
 		float floating;
 		int boolean;

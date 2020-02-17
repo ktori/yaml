@@ -16,4 +16,7 @@ struct yaml_callbacks_s
 
 	void
 	(*indent)(unsigned next, unsigned current, void *user);
+
+	void
+	(*sequence_entry)(void *user);
 };
