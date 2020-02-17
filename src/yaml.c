@@ -13,6 +13,7 @@
 #define YF_CONSUME 0x4u
 #define YF_QUOTE_SWITCH 0x8u
 #define YF_NO_QUOTE 0x10u
+#define YF_INDENT_SUCCESS 0x20u
 
 int
 yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
@@ -131,15 +132,30 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 						}
 						else
 						{
-							yaml->stack_size--;
-							if (yaml->stack_size && yaml->context_stack[yaml->stack_size - 1].indent > acc_indent)
+							while (yaml->stack_size > 1)
 							{
-								/* previous indent value was larger */
+								if (yaml->context_stack[yaml->stack_size].indent == acc_indent)
+								{
+									flags |= YF_INDENT_SUCCESS;
+									break;
+								}
+								yaml->stack_size--;
+								if (yaml->stack_size && yaml->context_stack[yaml->stack_size].indent < acc_indent)
+								{
+									/* previous indent value was larger */
+									state = YS_ERROR;
+									break;
+								}
+								if (yaml->callbacks.indent)
+									yaml->callbacks.indent(yaml->context_stack[yaml->stack_size].indent, ex_indent, user);
+								ex_indent = yaml->context_stack[yaml->stack_size].indent;
+							}
+
+							if (!(flags & YF_INDENT_SUCCESS))
+							{
 								state = YS_ERROR;
 								break;
 							}
-							if (yaml->callbacks.indent)
-								yaml->callbacks.indent(acc_indent, ex_indent, user);
 						}
 					}
 					ows_end = NULL;
