@@ -1,16 +1,13 @@
-key:
-  - value1
-  - value2
-  - value3
-  - key: value
-    foo: bar
-  -
-    - value1
-    - value2
-    - value3
-  - value4
-other:
-  - value1
-  - value2
-
-# other: [value1, value2, value3]
+- list
+- of
+- items
+- map: of
+  more: items
+  can:
+    - contain
+    - lists
+    - with: more
+      maps:
+        yes:
+          maps:
+            containing: more maps
