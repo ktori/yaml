@@ -23,14 +23,46 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 	};
 
 	const char *i = line, *end = line + length;
-	const char *key_begin = NULL, *value_begin = NULL;
-	int consume;
+	const char *key_begin = NULL, *value_begin = NULL, *ows_end = NULL;
+	int consume, eol = 0, comment = 0, inc_eol;
 	enum state state = YS_INDENT;
 	unsigned ex_indent, acc_indent = 0;
 
-	while (i < end && state != YS_ERROR && state != YS_DONE)
+	while (i < end && !eol && state != YS_ERROR && state != YS_DONE)
 	{
 		consume = 0;
+		comment = *i == '#';
+		inc_eol = comment || *i == '\r' || *i == '\n';
+		eol = i == end - 1 || inc_eol;
+
+		if (eol)
+		{
+			switch (state)
+			{
+				case YS_INDENT:
+				case YS_WS:
+					state = YS_DONE;
+					break;
+				case YS_VALUE:
+					if (inc_eol)
+					{
+						if (yaml->callbacks.value)
+							yaml->callbacks.value(value_begin, (ows_end ? ows_end + 1 : i) - value_begin, user);
+						state = YS_DONE;
+					}
+					else
+					{
+						if (yaml->callbacks.value)
+							yaml->callbacks.value(value_begin, (ows_end ? ows_end + 1 : i) - value_begin + 1, user);
+						state = YS_DONE;
+					}
+					break;
+				default:
+					state = YS_ERROR;
+					break;
+			}
+			break;
+		}
 
 		switch (state)
 		{
@@ -67,46 +99,40 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 						}
 					}
 					key_begin = i;
+					ows_end = NULL;
 					state = YS_KEY;
 				}
 				break;
 			case YS_KEY:
 				if (*i == ':')
-				{
-					if (yaml->callbacks.key)
-						yaml->callbacks.key(key_begin, i - key_begin, user);
 					state = YS_KV_SEP;
-				}
 				else
+				{
 					consume = 1;
+					if (*i != ' ')
+						ows_end = i;
+				}
 				break;
 			case YS_KV_SEP:
+				if (yaml->callbacks.key)
+					yaml->callbacks.key(key_begin, (ows_end ? ows_end + 1 : i) - key_begin, user);
 				state = YS_WS;
 				consume = 1;
 				break;
 			case YS_WS:
-				if (*i == '\n')
-					state = YS_DONE;
-				else if (*i != ' ')
+				if (*i != ' ')
 					state = YS_VALUE;
 				else
 					consume = 1;
 				break;
 			case YS_VALUE:
 				if (value_begin == NULL)
+				{
 					value_begin = i;
-				if (*i == '\r' || *i == '\n')
-				{
-					if (yaml->callbacks.value)
-						yaml->callbacks.value(value_begin, i - value_begin, user);
-					state = YS_DONE;
+					ows_end = NULL;
 				}
-				else if (i == end - 1)
-				{
-					if (yaml->callbacks.value)
-						yaml->callbacks.value(value_begin, i - value_begin + 1, user);
-					state = YS_DONE;
-				}
+				if (*i != ' ')
+					ows_end = i;
 				consume = 1;
 				break;
 			default:

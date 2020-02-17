@@ -1,5 +1,8 @@
-hello:
-  value: 123
-  another: test
-world:
-  value: 456
+hello : # comment
+  # this is a comment
+  value   :    1 #comment 23
+  another : test
+  # testing
+# comment
+world :
+  value   :  456    #
