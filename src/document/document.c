@@ -89,7 +89,7 @@ yd_key_callback(const char *key, size_t size, struct document_load_ctx_s *ctx)
 	}
 
 	yaml_kv_add(top->target_map, &top->kv_index);
-	yaml_value_string(&top->target_map->kv_array[top->kv_index].key, key, size);
+	yaml_value_from_string(&top->target_map->kv_array[top->kv_index].key, key, size);
 }
 
 static void
@@ -107,7 +107,7 @@ yd_value_callback(const char *value, size_t size, struct document_load_ctx_s *ct
 			return;
 		}
 
-		yaml_value_string(&top->target_map->kv_array[top->kv_index].value, value, size);
+		yaml_value_from_string(&top->target_map->kv_array[top->kv_index].value, value, size);
 		return;
 	}
 	if (top->target_sequence != NULL)
@@ -118,7 +118,7 @@ yd_value_callback(const char *value, size_t size, struct document_load_ctx_s *ct
 			return;
 		}
 
-		yaml_value_string(&top->target_sequence->values[top->kv_index], value, size);
+		yaml_value_from_string(&top->target_sequence->values[top->kv_index], value, size);
 		return;
 	}
 

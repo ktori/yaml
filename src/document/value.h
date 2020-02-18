@@ -38,4 +38,7 @@ int
 yaml_value_string(struct yaml_value_s *value, const char *string, size_t length);
 
 int
+yaml_value_from_string(struct yaml_value_s *value, const char *string, size_t length);
+
+int
 yaml_value_free(struct yaml_value_s *value);
