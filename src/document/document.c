@@ -232,7 +232,16 @@ yaml_document_bind(struct yaml_document_s *document, struct yaml_s *yaml)
 int
 yaml_document_destroy(struct yaml_document_s *document)
 {
-	free(document->ctx);
+	struct document_load_ctx_s *before, *top = document->ctx->top;
+
+	while (top != NULL)
+	{
+		before = top->before;
+		free(top);
+		top = before;
+	}
+
+	yaml_value_free(&document->root);
 
 	return EXIT_SUCCESS;
 }

@@ -22,7 +22,14 @@ yaml_map_init(struct yaml_map_s *map)
 int
 yaml_map_destroy(struct yaml_map_s *map)
 {
-	/* free each KV */
+	size_t i;
+
+	for (i = 0; i < map->array_size; ++i)
+	{
+		yaml_value_free(&map->kv_array[i].key);
+		yaml_value_free(&map->kv_array[i].value);
+	}
+
 	free(map->kv_array);
 	map->kv_array = NULL;
 	map->array_size = 0;

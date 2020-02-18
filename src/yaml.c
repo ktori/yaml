@@ -248,8 +248,10 @@ yaml_create(struct yaml_s **yaml)
 int
 yaml_free(struct yaml_s **yaml)
 {
-	free((*yaml)->context_stack);
-	free(*yaml);
+	struct yaml_s *yaml_p = *yaml;
+
+	free(yaml_p->context_stack);
+	free(yaml_p);
 	*yaml = NULL;
 
 	return EXIT_SUCCESS;
@@ -267,7 +269,7 @@ void
 yaml_context_push(struct yaml_s *yaml, struct yaml_context_s ctx)
 {
 	yaml->stack_size += 1;
-	if (yaml->stack_size > yaml->stack_capacity)
+	if (yaml->stack_size >= yaml->stack_capacity)
 	{
 		yaml->stack_capacity *= 2;
 		yaml->context_stack = realloc(yaml->context_stack, yaml->stack_capacity * sizeof(struct yaml_context_s));

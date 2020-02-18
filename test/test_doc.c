@@ -113,6 +113,8 @@ main(int argc, const char **argv)
 		}
 	}
 
+	fclose(input);
+
 	printf("YAML document loaded\n");
 	visit_yaml_value(&document.root, 0);
 
