@@ -132,13 +132,15 @@ yaml_in(struct yaml_s *yaml, const char *line, size_t length, void *user)
 						}
 						else
 						{
-							while (yaml->stack_size > 1)
+							while (yaml->stack_size)
 							{
 								if (yaml->context_stack[yaml->stack_size].indent == acc_indent)
 								{
 									flags |= YF_INDENT_SUCCESS;
 									break;
 								}
+								else if (yaml->stack_size == 1)
+									break;
 								yaml->stack_size--;
 								if (yaml->stack_size && yaml->context_stack[yaml->stack_size].indent < acc_indent)
 								{
