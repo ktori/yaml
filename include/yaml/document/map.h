@@ -1,6 +1,6 @@
 /*
  * Created by victoria on 17.02.20.
-*/
+ */
 
 #pragma once
 
@@ -21,3 +21,6 @@ yaml_map_destroy(struct yaml_map_s *map);
 
 int
 yaml_kv_add(struct yaml_map_s *map, size_t *out_idx);
+
+struct yaml_kv_s *
+yaml_kv_get(struct yaml_map_s *map, const char *key);

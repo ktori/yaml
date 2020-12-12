@@ -1,6 +1,6 @@
 /*
  * Created by victoria on 17.02.20.
-*/
+ */
 
 #include "yaml/document/map.h"
 
@@ -53,4 +53,21 @@ yaml_kv_add(struct yaml_map_s *map, size_t *out_idx)
 	memset(map->kv_array + *out_idx, 0, sizeof(struct yaml_kv_s));
 
 	return 0;
+}
+
+struct yaml_kv_s *
+yaml_kv_get(struct yaml_map_s *map, const char *key)
+{
+	size_t i;
+
+	for (i = 0; i < map->array_size; ++i)
+	{
+		if (map->kv_array[i].key.type != YVT_STRING)
+			continue;
+
+		if (!strcmp(map->kv_array[i].key.body.string, key))
+			return &map->kv_array[i];
+	}
+
+	return NULL;
 }
