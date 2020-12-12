@@ -1,10 +1,4 @@
 target_sources(yaml
-        PUBLIC
-        document.h
-        kv.h
-        map.h
-        value.h
-        sequence.h
         PRIVATE
         document.c
         map.c

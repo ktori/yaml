@@ -2,16 +2,17 @@
  * Created by victoria on 17.02.20.
 */
 
-#include "document.h"
-#include "../callbacks.h"
-#include "../yaml.h"
-#include "map.h"
-#include "kv.h"
-#include "value.h"
+#include "yaml/document/document.h"
 
+#include "yaml/document/kv.h"
+#include "yaml/document/map.h"
+#include "yaml/document/value.h"
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+#include <yaml/callbacks.h>
+#include <yaml/yaml.h>
 
 #define KV_INDEX_UNDEFINED ((size_t) -1)
 

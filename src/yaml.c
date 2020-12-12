@@ -2,7 +2,8 @@
  * Created by victoria on 16.02.20.
 */
 
-#include "yaml.h"
+#include <yaml/yaml.h>
+
 #include "yaml_impl.h"
 
 #include <stdlib.h>

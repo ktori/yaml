@@ -2,11 +2,11 @@
  * Created by victoria on 17.02.20.
 */
 
-#include "value.h"
+#include "yaml/document/value.h"
 
+#include <ctype.h>
 #include <malloc.h>
 #include <string.h>
-#include <ctype.h>
 
 int
 yaml_value_string(struct yaml_value_s *value, const char *string, size_t length)

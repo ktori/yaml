@@ -2,12 +2,12 @@
  * Created by victoria on 16.02.20.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "../include/yaml/callbacks.h"
+#include "../include/yaml/yaml.h"
 
-#include "../src/yaml.h"
-#include "../src/callbacks.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define MAX_LINE_LENGTH 1024
 

@@ -2,15 +2,15 @@
  * Created by victoria on 17.02.20.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "../include/yaml/yaml.h"
+#include "yaml/document/document.h"
+#include "yaml/document/kv.h"
+#include "yaml/document/map.h"
+#include "yaml/document/value.h"
 
-#include "../src/document/document.h"
-#include "../src/document/map.h"
-#include "../src/yaml.h"
-#include "../src/document/value.h"
-#include "../src/document/kv.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define MAX_LINE_LENGTH 1024
 

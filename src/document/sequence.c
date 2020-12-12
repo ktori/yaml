@@ -2,11 +2,12 @@
  * Created by victoria on 17.02.20.
 */
 
-#include "sequence.h"
-#include "value.h"
+#include "yaml/document/sequence.h"
 
-#include <string.h>
+#include "yaml/document/value.h"
+
 #include <stdlib.h>
+#include <string.h>
 
 int
 yaml_sequence_init(struct yaml_sequence_s *sequence)

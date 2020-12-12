@@ -2,11 +2,12 @@
  * Created by victoria on 17.02.20.
 */
 
-#include "map.h"
-#include "kv.h"
+#include "yaml/document/map.h"
 
-#include <string.h>
+#include "yaml/document/kv.h"
+
 #include <malloc.h>
+#include <string.h>
 
 int
 yaml_map_init(struct yaml_map_s *map)
